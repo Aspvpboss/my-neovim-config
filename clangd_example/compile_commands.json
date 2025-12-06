@@ -1,0 +1,14 @@
+[
+ {
+  "directory": "C:/Users/bfvau/AppData/Local/nvim",
+  "arguments": [
+   "gcc",
+   "main.c",
+   "-o",
+   "main.exe",
+   "-IC:\\msys64\\mingw64\\include",
+   "-Iinclude"
+  ],
+  "file": "main.c"
+ }
+]
