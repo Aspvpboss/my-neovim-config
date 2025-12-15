@@ -10,6 +10,9 @@ local options = {
         "vim",
         "vimdoc",
         "yaml",
+        "clangd",
+        "zls",
+        "asm-lsp"
     },
 
     highlight = {
