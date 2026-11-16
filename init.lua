@@ -122,8 +122,7 @@ do
   --  Schedule the setting after `UiEnter` because it can increase startup-time.
   --  Remove this option if you want your OS clipboard to remain independent.
   --  See `:help 'clipboard'`
-  vim.schedule(function() vim.o.clipboard = 'unnamedplus' end)
-
+  vim.o.clipboard = 'unnamedplus'
   -- Enable break indent
   vim.o.breakindent = true
 
@@ -207,10 +206,11 @@ do
         }
       end,
     },
+
   }
 
   vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
-
+  vim.keymap.set('x', 's', 'c', { noremap = true, silent = true, desc = 'Change selection' })
   -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
   -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
   -- is not what someone will guess without a bit more experience.
@@ -233,6 +233,12 @@ do
   vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
   vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
   vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+
+  -- Move cursor in insert mode
+  vim.keymap.set("i", "<C-h>", "<Left>", { desc = "Move left" }, { noremap = true, silent = true })
+  vim.keymap.set("i", "<C-j>", "<Down>", { desc = "Move down" }, { noremap = true, silent = true })
+  vim.keymap.set("i", "<C-k>", "<Up>", { desc = "Move up" }, { noremap = true, silent = true })
+  vim.keymap.set("i", "<C-l>", "<Right>", { desc = "Move right" }, { noremap = true, silent = true })
 
   -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
   -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
@@ -465,13 +471,23 @@ do
     },
     n_lines = 500,
   }
-
+  require('mini.pairs').setup()
   -- Add/delete/replace surroundings (brackets, quotes, etc.)
   --
   -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
   -- - sd'   - [S]urround [D]elete [']quotes
   -- - sr)'  - [S]urround [R]eplace [)] [']
-  require('mini.surround').setup()
+  require('mini.surround').setup({
+    mappings = {
+      add = 'gza',
+      delete = 'gzd',
+      find = 'gzf',
+      find_left = 'gzF',
+      highlight = 'gzh',
+      replace = 'gzr',
+      update_n_lines = 'gzn',
+    },
+  })
 
   -- Simple and easy statusline.
   --  You could remove this setup call if you don't like it,
@@ -733,16 +749,40 @@ do
   --  See `:help lsp-config` for information about keys and how to configure
   ---@type table<string, vim.lsp.Config>
   local servers = {
-    -- clangd = {},
+    -- C / C++
+    clangd = {
+      cmd = {
+        'clangd',
+        '--background-index',
+        '--clang-tidy',
+        '--header-insertion=iwyu',
+        '--completion-style=detailed',
+        '--function-arg-placeholders',
+        '--fallback-style=llvm',
+      },
+      init_options = {
+        usePlaceholders = true,
+        completeUnimported = true,
+        clangdFileStatus = true,
+      },
+    },
+
+    -- Rust
+    rust_analyzer = {
+      settings = {
+        ['rust-analyzer'] = {
+          cargo = {
+            allFeatures = true,
+          },
+          check = {
+            command = 'clippy', -- Runs clippy instead of basic cargo check on save
+          },
+        },
+      },
+    },
+
+    -- Go (Uncomment if you use Go for systems/network tools)
     -- gopls = {},
-    -- pyright = {},
-    -- tsc = {},
-    --
-    -- Some languages (like rust) have entire language plugins that can be useful:
-    --    https://github.com/mrcjkb/rustaceanvim
-    --
-    -- But for many setups, the LSP (`rust_analyzer`) will work just fine
-    -- rust_analyzer = {},
 
     stylua = {}, -- Used to format Lua code
 
@@ -764,8 +804,6 @@ do
           },
           workspace = {
             checkThirdParty = false,
-            -- NOTE: this is a lot slower and will cause issues when working on your own configuration.
-            --  See https://github.com/neovim/nvim-lspconfig/issues/3189
             library = vim.api.nvim_get_runtime_file('', true),
           },
         })
@@ -896,8 +934,9 @@ do
       -- <c-k>: Toggle signature help
       --
       -- See `:help blink-cmp-config-keymap` for defining your own keymap
-      preset = 'default',
-
+      preset = 'super-tab',
+      ['<C-k>'] = false, -- Disables blink.cmp's built-in signature toggle so <C-k> moves up
+      ['<C-s>'] = { 'show_signature', 'hide_signature', 'fallback' }, 
       -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
       --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
     },
