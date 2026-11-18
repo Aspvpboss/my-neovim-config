@@ -527,7 +527,7 @@ do
 
   vim.keymap.set('n', '<S-q>', '<cmd>BufferLineCyclePrev<cr>', { desc = 'Prev Buffer' })
   vim.keymap.set('n', '<S-t>', '<cmd>BufferLineCycleNext<cr>', { desc = 'Next Buffer' })
-  vim.keymap.set('n', '<leader>x', '<cmd>lua MiniBufremove.delete()<cr>', { desc = 'Delete Buffer' })
+  vim.keymap.set('n', '<S-x>', '<cmd>lua MiniBufremove.delete()<cr>', { desc = 'Delete Buffer' })
   -- ... and there is more!
   --  Check out: https://github.com/nvim-mini/mini.nvim
 end
@@ -791,6 +791,7 @@ do
         '--completion-style=detailed',
         '--function-arg-placeholders',
         '--fallback-style=llvm',
+        '--query-driver=**/*arm-none-eabi*',
       },
       init_options = {
         usePlaceholders = true,
