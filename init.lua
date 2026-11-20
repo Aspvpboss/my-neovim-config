@@ -545,6 +545,27 @@ do
   vim.keymap.set('n', '<S-q>', '<cmd>BufferLineCyclePrev<cr>', { desc = 'Prev Buffer' })
   vim.keymap.set('n', '<S-t>', '<cmd>BufferLineCycleNext<cr>', { desc = 'Next Buffer' })
   vim.keymap.set('n', '<S-x>', '<cmd>lua MiniBufremove.delete()<cr>', { desc = 'Delete Buffer' })
+
+  -- 2. Configure render-markdown.nvim
+  vim.pack.add {gh 'MeanderingProgrammer/render-markdown.nvim'}
+  require("render-markdown").setup({
+    anti_conceal = { enabled = true }, -- Reveals raw markdown on your active cursor line while typing
+  })
+
+  -- Toggle full markdown rendering on/off with <leader>tm
+  vim.keymap.set("n", "<leader>tm", "<cmd>RenderMarkdown toggle<cr>", { desc = "[T]oggle [M]arkdown Render" })
+
+  vim.pack.add {gh 'Skardyy/neo-img'}
+  -- 3. Configure snacks.nvim for inline/floating image rendering
+  require("neo-img").setup({
+    auto_open = true,   -- Automatically renders image files when you open them
+    oil_preview = true, -- Automatically previews images in oil.nvim if you use it
+    backend = "auto",   -- Automatically picks Sixel on Windows Terminal or Kitty/iTerm on Linux
+    resizeMode = "Fit",
+    size = "80%",
+  })
+
+
   -- ... and there is more!
   --  Check out: https://github.com/nvim-mini/mini.nvim
 end
@@ -798,74 +819,94 @@ do
   --  See `:help lsp-config` for information about keys and how to configure
   ---@type table<string, vim.lsp.Config>
   local servers = {
-    -- C / C++
-    clangd = {
-      cmd = {
-        'clangd',
-        '--background-index',
-        '--clang-tidy',
-        '--header-insertion=iwyu',
-        '--completion-style=detailed',
-        '--function-arg-placeholders',
-        '--fallback-style=llvm',
-        '--query-driver=**/*arm-none-eabi*',
-      },
-      init_options = {
-        usePlaceholders = true,
-        completeUnimported = true,
-        clangdFileStatus = true,
-      },
-    },
-
-    -- Rust
-    rust_analyzer = {
-      settings = {
-        ['rust-analyzer'] = {
-          cargo = {
-            allFeatures = true,
-          },
-          check = {
-            command = 'clippy', -- Runs clippy instead of basic cargo check on save
+      -- Python (Cross-platform: Linux & Windows)
+      pyright = {
+        settings = {
+          basedpyright = {
+            analysis = {
+              autoSearchPaths = true,
+              useLibraryCodeForTypes = true,
+              diagnosticMode = 'openFilesOnly',
+              typeCheckingMode = 'standard', -- Avoids overly strict warnings on untyped libraries
+            },
           },
         },
       },
-    },
+      ruff = {
+        on_attach = function(client, _)
+          -- Let basedpyright handle hover tooltips so they don't duplicate
+          client.server_capabilities.hoverProvider = false
+        end,
+      },
 
-    -- Go (Uncomment if you use Go for systems/network tools)
-    -- gopls = {},
-
-    stylua = {}, -- Used to format Lua code
-
-    -- Special Lua Config, as recommended by neovim help docs
-    lua_ls = {
-      on_init = function(client)
-        client.server_capabilities.documentFormattingProvider = false -- Disable formatting (formatting is done by stylua)
-
-        if client.workspace_folders then
-          local path = client.workspace_folders[1].name
-          if path ~= vim.fn.stdpath 'config' and (vim.uv.fs_stat(path .. '/.luarc.json') or vim.uv.fs_stat(path .. '/.luarc.jsonc')) then return end
-        end
-
-        local current_settings = client.config.settings --[[@as lspconfig.settings.lua_ls]]
-        client.config.settings.Lua = vim.tbl_deep_extend('force', current_settings.Lua, {
-          runtime = {
-            version = 'LuaJIT',
-            path = { 'lua/?.lua', 'lua/?/init.lua' },
-          },
-          workspace = {
-            checkThirdParty = false,
-            library = vim.api.nvim_get_runtime_file('', true),
-          },
-        })
-      end,
-      ---@type lspconfig.settings.lua_ls
-      settings = {
-        Lua = {
-          format = { enable = false }, -- Disable formatting (formatting is done by stylua)
+      -- C / C++
+      clangd = {
+        cmd = {
+          'clangd',
+          '--background-index',
+          '--clang-tidy',
+          '--header-insertion=iwyu',
+          '--completion-style=detailed',
+          '--function-arg-placeholders',
+          '--fallback-style=llvm',
+          '--query-driver=**/*arm-none-eabi*',
+        },
+        init_options = {
+          usePlaceholders = true,
+          completeUnimported = true,
+          clangdFileStatus = true,
         },
       },
-    },
-  }
+
+      -- Rust
+      rust_analyzer = {
+        settings = {
+          ['rust-analyzer'] = {
+            cargo = {
+              allFeatures = true,
+            },
+            check = {
+              command = 'clippy', -- Runs clippy instead of basic cargo check on save
+            },
+          },
+        },
+      },
+
+      -- Go (Uncomment if you use Go for systems/network tools)
+      -- gopls = {},
+
+      stylua = {}, -- Used to format Lua code
+
+      -- Special Lua Config, as recommended by neovim help docs
+      lua_ls = {
+        on_init = function(client)
+          client.server_capabilities.documentFormattingProvider = false -- Disable formatting (formatting is done by stylua)
+
+          if client.workspace_folders then
+            local path = client.workspace_folders[1].name
+            if path ~= vim.fn.stdpath 'config' and (vim.uv.fs_stat(path .. '/.luarc.json') or vim.uv.fs_stat(path .. '/.luarc.jsonc')) then return end
+          end
+
+          local current_settings = client.config.settings --[[@as lspconfig.settings.lua_ls]]
+          client.config.settings.Lua = vim.tbl_deep_extend('force', current_settings.Lua, {
+            runtime = {
+              version = 'LuaJIT',
+              path = { 'lua/?.lua', 'lua/?/init.lua' },
+            },
+            workspace = {
+              checkThirdParty = false,
+              library = vim.api.nvim_get_runtime_file('', true),
+            },
+          })
+        end,
+        ---@type lspconfig.settings.lua_ls
+        settings = {
+          Lua = {
+            format = { enable = false }, -- Disable formatting (formatting is done by stylua)
+          },
+        },
+      },
+    }
 
   vim.pack.add {
     gh 'neovim/nvim-lspconfig',
