@@ -157,6 +157,11 @@ do
   vim.o.list = true
   vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 
+  vim.opt.number = true
+  vim.opt.relativenumber = true
+
+  -- Displays: [Signs/Diagnostics] [4-char right-aligned Absolute] [3-char right-aligned Relative]
+  vim.opt.statuscolumn = "%s%=%{v:lnum} %= %{v:relnum} "
   -- Preview substitutions live, as you type!
   vim.o.inccommand = 'split'
 
@@ -187,7 +192,7 @@ do
   -- Diagnostic Config & Keymaps
   --  See `:help vim.diagnostic.Opts`
   vim.diagnostic.config {
-    update_in_insert = false,
+    update_in_insert = true,
     severity_sort = true,
     float = { border = 'rounded', source = 'if_many' },
     underline = { severity = { min = vim.diagnostic.severity.WARN } },
@@ -257,6 +262,18 @@ do
     group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
     callback = function() vim.hl.on_yank() end,
   })
+
+
+  vim.api.nvim_create_autocmd({ "InsertLeave", "TextChanged" }, {
+    pattern = "*",
+    callback = function()
+      if vim.bo.modifiable and not vim.bo.readonly and vim.fn.expand("%") ~= "" then
+        vim.cmd("update")
+        print("Auto-saved at " .. os.date("%H:%M:%S"))
+      end
+    end,
+  })
+  
 end
 
 -- ============================================================
@@ -883,6 +900,8 @@ do
     vim.lsp.config(name, server)
     vim.lsp.enable(name)
   end
+
+  
 end
 
 -- ============================================================
