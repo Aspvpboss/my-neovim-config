@@ -157,6 +157,13 @@ do
   vim.o.list = true
   vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 
+
+
+  vim.opt.expandtab = true   -- Convert tabs to spaces
+  vim.opt.tabstop = 4        -- Number of spaces a <Tab> counts for visually
+  vim.opt.shiftwidth = 4     -- Number of spaces used for auto-indent and >> / <<
+  vim.opt.softtabstop = 4    -- Number of spaces inserted/deleted when pressing Tab/Backspace
+  
   vim.opt.number = true
   vim.opt.relativenumber = true
 
