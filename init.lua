@@ -207,7 +207,15 @@ do
     -- Can switch between these as you prefer
     virtual_text = true, -- Text shows up at the end of the line
     virtual_lines = false, -- Text shows up underneath the line, with virtual lines
-
+    virtual_text = {
+      severity = { min = vim.diagnostic.severity.ERROR },
+    },
+    signs = {
+      severity = { min = vim.diagnostic.severity.ERROR },
+    },
+    underline = {
+      severity = { min = vim.diagnostic.severity.ERROR },
+    },
     -- Auto open the float, so you can easily read the errors when jumping with `[d` and `]d`
     jump = {
       on_jump = function(_, bufnr)
@@ -380,6 +388,10 @@ do
   --
   -- See `:help gitsigns` to understand what each configuration key does.
   -- Adds git related signs to the gutter, as well as utilities for managing changes
+
+
+
+
   vim.pack.add { gh 'lewis6991/gitsigns.nvim' }
   local gitsigns = require 'gitsigns'
   gitsigns.setup {
@@ -816,6 +828,7 @@ do
       --
       -- This may be unwanted, since they displace some of your code
       if client and client:supports_method('textDocument/inlayHint', event.buf) then
+        vim.lsp.inlay_hint.enable(true, { bufnr = event.buf })
         map('<leader>th', function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf }) end, '[T]oggle Inlay [H]ints')
       end
     end,
@@ -837,7 +850,7 @@ do
               typeCheckingMode = 'standard', -- Avoids overly strict warnings on untyped libraries
             },
           },
-        },
+        },  
       },
       ruff = {
         on_attach = function(client, _)
